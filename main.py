@@ -1,6 +1,7 @@
 import os
 import discord
 from dotenv import load_dotenv
+from discord import Message
 
 # Load keys from the .env file
 load_dotenv()
@@ -17,15 +18,15 @@ async def on_ready():
     print(f'✅ Success! Logged in as {client.user}')
 
 @client.event
-async def on_message(message):
-    # ADD THIS LINE:
-    print(f"DEBUG: Received message: '{message.content}' from {message.author}")
-
+async def on_message(message : Message):
     if message.author == client.user:
         return
 
-    if message.content.lower() == 'ping':
-        await message.channel.send('🏓 Pong! Your Raspberry Pi is talking to you.')
+    # Use 'in' to check if 'ping' exists anywhere in the message
+    if 'ping' in message.content.lower():
+        await message.channel.send(f'🏓 Pong! I heard you, {message.author.name}!')
+
+
 # Load the token
 TOKEN = os.getenv('DISCORD_TOKEN')
 
