@@ -18,13 +18,14 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    # Don't reply to yourself
+    # ADD THIS LINE:
+    print(f"DEBUG: Received message: '{message.content}' from {message.author}")
+
     if message.author == client.user:
         return
 
     if message.content.lower() == 'ping':
         await message.channel.send('🏓 Pong! Your Raspberry Pi is talking to you.')
-
 # Load the token
 TOKEN = os.getenv('DISCORD_TOKEN')
 
