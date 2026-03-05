@@ -7,6 +7,9 @@ requires-python = ">=3.12"
 dependencies = [
     "discord>=2.3.2",
     "dotenv>=0.9.9",
+    "google-api-python-client>=2.192.0",
+    "google-auth>=2.48.0",
     "openai>=2.24.0",
+    "pydantic>=2.12.5",
     "python-dotenv>=1.2.1",
 ]
