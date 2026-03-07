@@ -16,6 +16,7 @@ from calendar_tools import (
     delete_event,
     edit_event,
     view_events,
+    set_calendar_timezone,
 )
 
 # Define the tool as a typed object
@@ -135,6 +136,24 @@ view_events_tool = ChatCompletionToolParam(
     },
 )
 
+set_calendar_timezone_tool = ChatCompletionToolParam(
+    type="function",
+    function={
+        "name": "set_calendar_timezone",
+        "description": "Sets the timezone for all future calendar operations",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "timezone_str": {
+                    "type": "string",
+                    "description": "The timezone to set (e.g., 'Europe/Stockholm', 'UTC', 'America/New_York')",
+                },
+            },
+            "required": ["timezone_str"],
+        },
+    },
+)
+
 
 # Then just put it in your list
 # TODO add the new tools:
@@ -144,6 +163,7 @@ tools: list[ChatCompletionToolParam] = [
     delete_event_tool,
     edit_event_tool,
     view_events_tool,
+    set_calendar_timezone_tool,
 ]
 
 
@@ -171,7 +191,7 @@ def run_tools(
         if tool_call.type != "function":
             continue
         func_name = tool_call.function.name
-        
+
         # Log what the agent is doing:
         print(tool_call.function.arguments)
 
@@ -196,12 +216,14 @@ def run_tools(
             )
             events = view_events(**func_args)
             result = str([event.model_dump() for event in events])
+        elif func_name == "set_calendar_timezone":
+            result = set_calendar_timezone(**func_args)
 
         context.append(
             ChatCompletionToolMessageParam(
                 role="tool", tool_call_id=tool_call.id, content=result
             )
         )
-        any_tool_calls = True;
+        any_tool_calls = True
 
     return (context, any_tool_calls)
