@@ -6,6 +6,7 @@ import datetime
 from dotenv import load_dotenv
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from zoneinfo import ZoneInfo # Standard in Python 3.9+
 
 
 class EventTime(BaseModel):
@@ -35,6 +36,8 @@ load_dotenv()
 SERVICE_ACCOUNT_FILE = os.getenv("CALENDAR_API")
 CALENDAR_ID = os.getenv("CALENDAR_ID")
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
+CURRENT_TIMEZONE = "Europe/Stockholm"
+
 
 
 def get_calendar_service():
@@ -59,6 +62,10 @@ def add_event(
 
     end_time = start_time + datetime.timedelta(hours=duration)
 
+    # Make sure that times are in the selected timezone
+    start_time = start_time.replace(tzinfo=ZoneInfo(CURRENT_TIMEZONE))
+    end_time = end_time.replace(tzinfo=ZoneInfo(CURRENT_TIMEZONE))
+
     start_iso = start_time.isoformat()
     end_iso = end_time.isoformat()
 
@@ -68,11 +75,11 @@ def add_event(
         "description": "",
         "start": {
             "dateTime": start_iso,
-            "timeZone": "UTC",
+            "timeZone": CURRENT_TIMEZONE,
         },
         "end": {
             "dateTime": end_iso,
-            "timeZone": "UTC",
+            "timeZone": CURRENT_TIMEZONE,
         },
         "reminders": {
             "useDefault": True,
@@ -96,14 +103,18 @@ def view_events(
     """
     service = get_calendar_service()
 
+    # Make sure that time is in the selected timezone
+    minimumTime = minimumTime.replace(tzinfo=ZoneInfo(CURRENT_TIMEZONE))
+
     events_result = (
         service.events()
         .list(
             calendarId=CALENDAR_ID,
-            timeMin=minimumTime.isoformat() + "Z",
+            timeMin=minimumTime.isoformat(),
             maxResults=maxResults,
             singleEvents=singleEvents,
             orderBy="startTime",
+            timeZone=CURRENT_TIMEZONE
         )
         .execute()
     )
@@ -147,3 +158,14 @@ def delete_event(event_id: str) -> str:
     service = get_calendar_service()
     service.events().delete(calendarId=CALENDAR_ID, eventId=event_id).execute()
     return f"Event deleted successfully"
+
+def set_calendar_timezone(timezone_str: str):
+    """Sets the timezone for all future calendar operations."""
+    global CURRENT_TIMEZONE
+    # Validate it's a real timezone
+    try:
+        ZoneInfo(timezone_str)
+        CURRENT_TIMEZONE = timezone_str
+        return f"Timezone updated to {timezone_str}"
+    except Exception:
+        return "Invalid timezone ID (e.g., use 'Europe/Stockholm' or 'UTC')"

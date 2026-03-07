@@ -6,8 +6,9 @@ from openai.types.chat import (
     ChatCompletionMessageToolCallUnion,
     ChatCompletionMessageParam,
 )
-from typing import Iterable
+from typing import Iterable, Tuple
 import datetime
+import json
 
 from calendar_tools import (
     get_calendar_service,
@@ -161,14 +162,20 @@ def get_tools() -> list[ChatCompletionToolParam]:
 def run_tools(
     tool_calls: list[ChatCompletionMessageToolCallUnion],
     context: Iterable[ChatCompletionMessageParam],
-) -> list[ChatCompletionMessageParam]:
+) -> Tuple[list[ChatCompletionMessageParam], bool]:
     context = list(context)
+
+    any_tool_calls = False
 
     for tool_call in tool_calls:
         if tool_call.type != "function":
             continue
         func_name = tool_call.function.name
-        func_args = eval(tool_call.function.arguments)
+        
+        # Log what the agent is doing:
+        print(tool_call.function.arguments)
+
+        func_args = json.loads(tool_call.function.arguments)
         result = f"No tool was called using {func_name}"
 
         # TODO Replace the following with a switch for each available function, default does not do anything
@@ -195,5 +202,6 @@ def run_tools(
                 role="tool", tool_call_id=tool_call.id, content=result
             )
         )
+        any_tool_calls = True;
 
-    return context
+    return (context, any_tool_calls)
