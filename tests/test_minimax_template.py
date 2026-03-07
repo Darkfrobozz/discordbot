@@ -20,7 +20,7 @@ def test_calendar_integration():
     messages = [
         {
             "role": "user",
-            "content": "Find an event called 'Test Event' and change its title to 'Updated Test Event'",
+            "content": "Find an event called 'Test Event' on March 15th 2026 at 14:00 and change its title to 'Updated Test Event'",
         }
     ]
     response = run_ralph(messages)
@@ -33,7 +33,7 @@ def test_calendar_integration():
     messages = [
         {
             "role": "user",
-            "content": "Find an event called 'Updated Test Event' and delete it",
+            "content": "Find an event called 'Updated Test Event' on March 15th 2026 at 14:00 and delete it",
         }
     ]
     response = run_ralph(messages)
