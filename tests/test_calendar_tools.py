@@ -13,11 +13,13 @@ from calendar_tools import (
 )
 
 
+@pytest.mark.integration
 def test_view_events():
     get_calendar_service()
     result = view_events(datetime.datetime.now(), 10, True)
 
 
+@pytest.mark.integration
 def test_manage_event():
     get_calendar_service()
     start_time = datetime.datetime.now()
